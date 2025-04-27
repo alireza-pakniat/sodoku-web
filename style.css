@@ -56,4 +56,15 @@ body {
   .hidden {
     display: none;
   }
-  
+
+  /* استایل برای سلول انتخاب شده */
+.cell.selected {
+  background-color: #cce5ff;
+}
+
+/* استایل مخصوص دکمه پاک کردن */
+#number-picker .delete-btn {
+  background-color: #ffcccc;
+  color: red;
+  font-weight: bold;
+}
