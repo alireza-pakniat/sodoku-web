@@ -1,236 +1,155 @@
-const board = document.getElementById('sudoku-board');
+/* عناصر اصلی */
+const board        = document.getElementById('sudoku-board');
 const numberPicker = document.getElementById('number-picker');
-let selectedCell = null;
+let   selectedCell = null;
 
-// آرایه عددهای اولیه سودوکو
+/* ماتریس عددهای اولیه (۰ یعنی خانه خالی) */
 const initialBoard = [
-  [5, 3, 0, 0, 7, 0, 0, 0, 0],
-  [6, 0, 0, 1, 9, 5, 0, 0, 0],
-  [0, 9, 8, 0, 0, 0, 0, 6, 0],
-  [8, 0, 0, 0, 6, 0, 0, 0, 3],
-  [4, 0, 0, 8, 0, 3, 0, 0, 1],
-  [7, 0, 0, 0, 2, 0, 0, 0, 6],
-  [0, 6, 0, 0, 0, 0, 2, 8, 0],
-  [0, 0, 0, 4, 1, 9, 0, 0, 5],
-  [0, 0, 0, 0, 8, 0, 0, 7, 9]
+ [5,0,0,3,0,0,0,0,0],
+ [0,0,0,0,7,0,0,0,0],
+ [0,9,8,0,0,0,0,6,0],
+ [8,0,0,0,6,0,0,0,3],
+ [4,0,0,8,0,3,0,0,1],
+ [7,0,0,0,2,0,0,0,6],
+ [0,6,0,0,0,0,2,8,0],
+ [0,0,0,4,1,9,0,0,5],
+ [0,0,0,0,8,0,0,7,9]
 ];
 
-// ساخت جدول ۹×۹
-for (let row = 0; row < 9; row++) {
-    const rowDiv = document.createElement('div');
-    rowDiv.classList.add('row');
+/* ====== ساخت جدول ====== */
+for(let r=0;r<9;r++){
+  const rowDiv=document.createElement('div');
+  rowDiv.classList.add('row');
 
-    for (let col = 0; col < 9; col++) {
-        const cell = document.createElement('div');
-        cell.classList.add('cell');
-        cell.dataset.row = row;
-        cell.dataset.col = col;
+  for(let c=0;c<9;c++){
+    const cell=document.createElement('div');
+    cell.classList.add('cell');
+    cell.dataset.row=r; cell.dataset.col=c;
 
-        if (initialBoard[row][col] !== 0) {
-            cell.textContent = initialBoard[row][col];
-            cell.classList.add('fixed');
-        } else {
-            cell.addEventListener('click', (event) => openNumberPicker(event, cell));
-        }
-
-        rowDiv.appendChild(cell);
+    if(initialBoard[r][c]!==0){
+      cell.textContent=initialBoard[r][c];
+      cell.classList.add('fixed');
+    }else{
+      cell.addEventListener('click',e=>openNumberPicker(e,cell));
     }
-
-    board.appendChild(rowDiv);
+    rowDiv.appendChild(cell);
+  }
+  board.appendChild(rowDiv);
 }
 
-// باز کردن منوی انتخاب عدد
-/* ... بالای فایل همه‌چیز مثل قبل بماند … */
+/* ====== نمایش منو ====== */
+function openNumberPicker(e,cell){
+  e.stopPropagation();
 
-/* ---------- جایگزینِ تابع openNumberPicker ---------- */
-function openNumberPicker(event, cell) {
-  event.stopPropagation();             // اجازه نده کلیک به سند برسد
-  if (selectedCell) selectedCell.classList.remove('selected');
+  if(selectedCell) selectedCell.classList.remove('selected');
+  selectedCell=cell; selectedCell.classList.add('selected');
 
-  selectedCell = cell;
-  selectedCell.classList.add('selected');
-
-  /* 1. منو را صفر تا صدِ تازه می‌سازیم */
-  numberPicker.innerHTML = '';
-
-  for (let i = 1; i <= 9; i++) {
-    const btn = document.createElement('button');
-    btn.textContent = i;
-    btn.addEventListener('click', () => {        // فقط همین دکمه
-      pickNumber(i);
-      closeNumberPicker();                       // ← بستنِ قطعی
-    });
+  /* ساخت دکمه‌ها از نو */
+  numberPicker.innerHTML='';
+  for(let i=1;i<=9;i++){
+    const btn=document.createElement('button');
+    btn.textContent=i;
+    btn.onclick=()=>{ pickNumber(i); closeNumberPicker(); };
     numberPicker.appendChild(btn);
   }
+  const clr=document.createElement('button');
+  clr.textContent='X'; clr.classList.add('delete-btn');
+  clr.onclick=()=>{ pickNumber(''); closeNumberPicker(); };
+  numberPicker.appendChild(clr);
 
-  const clearBtn = document.createElement('button');
-  clearBtn.textContent = 'X';
-  clearBtn.classList.add('delete-btn');
-  clearBtn.addEventListener('click', () => {
-    pickNumber('');
-    closeNumberPicker();
-  });
-  numberPicker.appendChild(clearBtn);
-
-  const r = cell.getBoundingClientRect();
-  numberPicker.style.left = `${r.right + window.scrollX + 5}px`;
-  numberPicker.style.top  = `${r.bottom + window.scrollY + 5}px`;
-  numberPicker.classList.remove('hidden');
+  /* موقعیت کنار سلول */
+  const r=cell.getBoundingClientRect();
+  numberPicker.style.left=`${r.right + window.scrollX + 5}px`;
+  numberPicker.style.top =`${r.bottom+ window.scrollY + 5}px`;
+  numberPicker.style.display='grid';      /* ⬅️ منو دیده شود */
 }
 
-/* ---------- تابع بسته‌سازیِ یگانه ---------- */
-function closeNumberPicker() {
-  numberPicker.classList.add('hidden');   // مخفی
-  numberPicker.innerHTML = '';            // محتوا صفر شود
-  if (selectedCell) {
+/* ====== بستن منو (قطعی) ====== */
+function closeNumberPicker(){
+  numberPicker.style.display='none';      /* ⬅️ منو ناپدید شود */
+  numberPicker.innerHTML='';              /* دکمه‌ها پاک شوند */
+  if(selectedCell){
     selectedCell.classList.remove('selected');
-    selectedCell = null;
+    selectedCell=null;
   }
 }
 
-/* ---------- شنوندهٔ کلی: هر کلیک خارج از منو ⇒ بستن ---------- */
-document.addEventListener('click', (e) => {
-  if (!numberPicker.contains(e.target)) {   // بیرون از منو بود؟
-    closeNumberPicker();
-  }
+/* کلیک بیرونِ منو → بستن */
+document.addEventListener('click',e=>{
+  if(!numberPicker.contains(e.target)) closeNumberPicker();
 });
 
-// انتخاب عدد یا حذف
-function pickNumber(number) {
-  if (selectedCell) {
-      selectedCell.textContent = number;
-      selectedCell.classList.remove('selected');
+/* ====== نوشتن عدد در سلول ====== */
+function pickNumber(num){
+  if(!selectedCell) return;
 
-      if (number !== '') {
-          if (!selectedCell.classList.contains('fixed')) {
-              selectedCell.classList.add('user-input');
-          }
-      } else {
-          selectedCell.classList.remove('user-input');
-      }
-
-      selectedCell = null;
+  selectedCell.textContent=num;
+  if(num===''){
+    selectedCell.classList.remove('user-input');
+  }else if(!selectedCell.classList.contains('fixed')){
+    selectedCell.classList.add('user-input');
   }
+  selectedCell.classList.remove('selected');
+  selectedCell=null;
+
   checkConflicts();
   checkWin();
 }
 
+/* ====== خطاهای ردیف/ستون/بلاک ====== */
+function checkConflicts(){
+  document.querySelectorAll('.cell').forEach(c=>c.classList.remove('error'));
 
-// بستن number-picker
-function closeNumberPicker() {
-    numberPicker.classList.add('hidden');
-}
+  /* ردیف و ستون */
+  for(let i=0;i<9;i++){
+    const rowCount={}, colCount={};
+    for(let j=0;j<9;j++){
+      const rCell=document.querySelector(`.cell[data-row="${i}"][data-col="${j}"]`);
+      const cCell=document.querySelector(`.cell[data-row="${j}"][data-col="${i}"]`);
 
-function checkConflicts() {
-  // پاک کردن خطاهای قبلی
-  document.querySelectorAll('.cell').forEach(cell => {
-      cell.classList.remove('error');
-  });
-
-  const cells = document.querySelectorAll('.cell');
-
-  // چک کردن تکرار در ردیف‌ها و ستون‌ها
-  for (let row = 0; row < 9; row++) {
-      const rowValues = {};
-      const colValues = {};
-
-      for (let col = 0; col < 9; col++) {
-          const rowCell = document.querySelector(`.cell[data-row="${row}"][data-col="${col}"]`);
-          const colCell = document.querySelector(`.cell[data-row="${col}"][data-col="${row}"]`);
-
-          // چک ردیف
-          if (rowCell.textContent !== '') {
-              if (rowValues[rowCell.textContent]) {
-                  rowValues[rowCell.textContent].push(rowCell);
-              } else {
-                  rowValues[rowCell.textContent] = [rowCell];
-              }
-          }
-
-          // چک ستون
-          if (colCell.textContent !== '') {
-              if (colValues[colCell.textContent]) {
-                  colValues[colCell.textContent].push(colCell);
-              } else {
-                  colValues[colCell.textContent] = [colCell];
-              }
-          }
+      if(rCell.textContent){
+        rowCount[rCell.textContent]=(rowCount[rCell.textContent]||[]).concat(rCell);
       }
-
-      for (const value in rowValues) {
-          if (rowValues[value].length > 1) {
-              rowValues[value].forEach(cell => cell.classList.add('error'));
-          }
+      if(cCell.textContent){
+        colCount[cCell.textContent]=(colCount[cCell.textContent]||[]).concat(cCell);
       }
-
-      for (const value in colValues) {
-          if (colValues[value].length > 1) {
-              colValues[value].forEach(cell => cell.classList.add('error'));
-          }
-      }
+    }
+    Object.values(rowCount).forEach(arr=>{ if(arr.length>1) arr.forEach(c=>c.classList.add('error')); });
+    Object.values(colCount).forEach(arr=>{ if(arr.length>1) arr.forEach(c=>c.classList.add('error')); });
   }
 
-  for (let blockRow = 0; blockRow < 3; blockRow++) {
-      for (let blockCol = 0; blockCol < 3; blockCol++) {
-          const blockValues = {};
-
-          for (let row = blockRow * 3; row < blockRow * 3 + 3; row++) {
-              for (let col = blockCol * 3; col < blockCol * 3 + 3; col++) {
-                  const cell = document.querySelector(`.cell[data-row="${row}"][data-col="${col}"]`);
-
-                  if (cell.textContent !== '') {
-                      if (blockValues[cell.textContent]) {
-                          blockValues[cell.textContent].push(cell);
-                      } else {
-                          blockValues[cell.textContent] = [cell];
-                      }
-                  }
-              }
+  /* بلاک ۳×۳ */
+  for(let br=0;br<3;br++){
+    for(let bc=0;bc<3;bc++){
+      const valMap={};
+      for(let r=br*3;r<br*3+3;r++){
+        for(let c=bc*3;c<bc*3+3;c++){
+          const cell=document.querySelector(`.cell[data-row="${r}"][data-col="${c}"]`);
+          if(cell.textContent){
+            valMap[cell.textContent]=(valMap[cell.textContent]||[]).concat(cell);
           }
-
-          for (const value in blockValues) {
-              if (blockValues[value].length > 1) {
-                  blockValues[value].forEach(cell => cell.classList.add('error'));
-              }
-          }
+        }
       }
+      Object.values(valMap).forEach(arr=>{ if(arr.length>1) arr.forEach(c=>c.classList.add('error')); });
+    }
   }
 }
 
-function checkWin() {
-  const cells = document.querySelectorAll('.cell');
-  let allFilled = true;
-  let anyError = false;
+/* ====== بررسی برد ====== */
+function checkWin(){
+  const cells=[...document.querySelectorAll('.cell')];
+  const allFilled=cells.every(c=>c.textContent!=='');
+  const noError =cells.every(c=>!c.classList.contains('error'));
 
-  cells.forEach(cell => {
-      if (cell.textContent === '') {
-          allFilled = false;
-      }
-      if (cell.classList.contains('error')) {
-          anyError = true;
-      }
-  });
-
-  const board = document.getElementById('sudoku-board');
-
-  if (allFilled && !anyError) {
-      board.style.backgroundColor = '#ccffcc';
-      cells.forEach(cell => {
-          cell.style.backgroundColor = '#ccffcc';
-      });
-
-      setTimeout(() => {
-          alert("🎉 Congratulations! Puzzle Solved! 🎉");
-      }, 100); // کمی تاخیر برای اینکه سبز شدن رو ببینی بعد پیغام بیاد
-
-  } else {
-      board.style.backgroundColor = '';
-      cells.forEach(cell => {
-          if (!cell.classList.contains('fixed')) {
-              cell.style.backgroundColor = '';
-          } else {
-              cell.style.backgroundColor = '#eee';
-          }
-      });
+  if(allFilled && noError){
+    board.style.background='#ccffcc';
+    cells.forEach(c=>c.style.background='#ccffcc');
+    setTimeout(()=>alert('🎉 Congratulations! Puzzle solved!'),150);
+  }else{
+    board.style.background='';
+    cells.forEach(c=>{
+      if(c.classList.contains('fixed')) c.style.background='#eee';
+      else if(!c.classList.contains('error')) c.style.background='';
+    });
   }
 }

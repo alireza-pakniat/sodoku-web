@@ -1,87 +1,50 @@
-body {
+/* ظاهر کلی */
+body{
   font-family: Arial, sans-serif;
-  text-align: center;
-  margin-top: 30px;
+  text-align:center;
+  margin-top:30px;
 }
 
-#sudoku-board {
-  display: inline-block;
-  margin-top: 20px;
-  border: 3px solid black;
+/* جدول */
+#sudoku-board{
+  display:inline-block;
+  border:3px solid #000;
 }
 
-.row {
-  display: flex;
+/* ردیف و سلول‌ها */
+.row{ display:flex; }
+.cell{
+  width:50px; height:50px;
+  border:1px solid #999;
+  display:flex; align-items:center; justify-content:center;
+  font-size:20px;
+  cursor:pointer;
 }
+.row:nth-child(3n) .cell{ border-bottom:3px solid #000; }
+.cell:nth-child(3n){ border-right:3px solid #000; }
 
-.cell {
-  width: 50px;
-  height: 50px;
-  border: 1px solid #999;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 20px;
-  cursor: pointer;
+/* سلول ثابتِ اولیه */
+.cell.fixed{ background:#eee; font-weight:bold; cursor:default; }
+
+/* سلول انتخاب‌شده */
+.cell.selected{ background:#cce5ff; }
+
+/* عددی که کاربر وارد کرده */
+.cell.user-input{ color:#3399ff; font-weight:bold; }
+
+/* خطای تکرار */
+.cell.error{ background:#ffcccc; }
+
+/* پاپ-آپ اعداد */
+#number-picker{
+  position:absolute;
+  display:grid;           /* هنگام بازشدن، JS مقدار display را grid می‌کند */
+  grid-template-columns:repeat(3,40px);
+  gap:5px;
+  background:#fff; border:2px solid #000; padding:10px; border-radius:10px;
+  box-shadow:0 0 10px rgba(0,0,0,.5); z-index:10;
 }
-
-.cell:nth-child(3n) {
-  border-right: 3px solid black;
+#number-picker button{
+  width:40px; height:40px; font-size:18px; cursor:pointer;
 }
-
-.row:nth-child(3n) .cell {
-  border-bottom: 3px solid black;
-}
-
-/* سلول انتخاب شده */
-.cell.selected {
-  background-color: #cce5ff;
-}
-
-/* سلول‌های عدد اولیه (قفل شده) */
-.cell.fixed {
-  background-color: #eee;
-  font-weight: bold;
-  cursor: default;
-}
-
-/* پاپ‌آپ انتخاب عدد */
-#number-picker {
-  position: absolute;
-  display: grid;
-  grid-template-columns: repeat(3, 40px);
-  gap: 5px;
-  background-color: white;
-  border: 2px solid black;
-  padding: 10px;
-  border-radius: 10px;
-  box-shadow: 0 0 10px rgba(0,0,0,0.5);
-  z-index: 10;
-}
-
-#number-picker button {
-  width: 40px;
-  height: 40px;
-  font-size: 18px;
-  cursor: pointer;
-}
-
-/* دکمه دیلیت (X) */
-#number-picker .delete-btn {
-  background-color: #ffcccc;
-  color: red;
-  font-weight: bold;
-}
-
-.hidden {
-  display: none;
-}
-
-.cell.error {
-  background-color: #ffcccc;
-}
-
-.cell.user-input {
-  color: #3399ff; /* آبی روشن‌تر و ملایم */
-}
-
+#number-picker .delete-btn{ background:#ffcccc; color:red; font-weight:bold; }
