@@ -2,6 +2,19 @@ const board = document.getElementById('sudoku-board');
 const numberPicker = document.getElementById('number-picker');
 let selectedCell = null;
 
+// آرایه عددهای اولیه سودوکو
+const initialBoard = [
+  [5, 3, 0, 0, 7, 0, 0, 0, 0],
+  [6, 0, 0, 1, 9, 5, 0, 0, 0],
+  [0, 9, 8, 0, 0, 0, 0, 6, 0],
+  [8, 0, 0, 0, 6, 0, 0, 0, 3],
+  [4, 0, 0, 8, 0, 3, 0, 0, 1],
+  [7, 0, 0, 0, 2, 0, 0, 0, 6],
+  [0, 6, 0, 0, 0, 0, 2, 8, 0],
+  [0, 0, 0, 4, 1, 9, 0, 0, 5],
+  [0, 0, 0, 0, 8, 0, 0, 7, 9]
+];
+
 // ساخت جدول ۹×۹
 for (let row = 0; row < 9; row++) {
     const rowDiv = document.createElement('div');
@@ -12,13 +25,21 @@ for (let row = 0; row < 9; row++) {
         cell.classList.add('cell');
         cell.dataset.row = row;
         cell.dataset.col = col;
-        cell.addEventListener('click', (event) => openNumberPicker(event, cell));
+
+        if (initialBoard[row][col] !== 0) {
+            cell.textContent = initialBoard[row][col];
+            cell.classList.add('fixed');
+        } else {
+            cell.addEventListener('click', (event) => openNumberPicker(event, cell));
+        }
+
         rowDiv.appendChild(cell);
     }
 
     board.appendChild(rowDiv);
 }
 
+// باز کردن منوی انتخاب عدد
 function openNumberPicker(event, cell) {
     event.stopPropagation();
 
@@ -37,6 +58,7 @@ function openNumberPicker(event, cell) {
         btn.onclick = (e) => {
             e.stopPropagation();
             pickNumber(i);
+            closeNumberPicker();
         };
         numberPicker.appendChild(btn);
     }
@@ -47,6 +69,7 @@ function openNumberPicker(event, cell) {
     clearBtn.onclick = (e) => {
         e.stopPropagation();
         pickNumber('');
+        closeNumberPicker();
     };
     numberPicker.appendChild(clearBtn);
 
@@ -57,21 +80,95 @@ function openNumberPicker(event, cell) {
     numberPicker.classList.remove('hidden');
 }
 
-// وقتی روی عدد یا ضربدر کلیک میشه
+// انتخاب عدد یا حذف
 function pickNumber(number) {
     if (selectedCell) {
         selectedCell.textContent = number;
         selectedCell.classList.remove('selected');
         selectedCell = null;
     }
-    updateNumberPickerVisibility();
+
+    checkConflicts();
+
 }
 
-// تابع آپدیت نمایش یا عدم نمایش number-picker
-function updateNumberPickerVisibility() {
-    if (selectedCell && selectedCell.classList.contains('selected')) {
-        numberPicker.classList.remove('hidden');
-    } else {
-        numberPicker.classList.add('hidden');
-    }
+// بستن number-picker
+function closeNumberPicker() {
+    numberPicker.classList.add('hidden');
+}
+
+function checkConflicts() {
+  // پاک کردن خطاهای قبلی
+  document.querySelectorAll('.cell').forEach(cell => {
+      cell.classList.remove('error');
+  });
+
+  const cells = document.querySelectorAll('.cell');
+
+  // چک کردن تکرار در ردیف‌ها و ستون‌ها
+  for (let row = 0; row < 9; row++) {
+      const rowValues = {};
+      const colValues = {};
+
+      for (let col = 0; col < 9; col++) {
+          const rowCell = document.querySelector(`.cell[data-row="${row}"][data-col="${col}"]`);
+          const colCell = document.querySelector(`.cell[data-row="${col}"][data-col="${row}"]`);
+
+          // چک ردیف
+          if (rowCell.textContent !== '') {
+              if (rowValues[rowCell.textContent]) {
+                  rowValues[rowCell.textContent].push(rowCell);
+              } else {
+                  rowValues[rowCell.textContent] = [rowCell];
+              }
+          }
+
+          // چک ستون
+          if (colCell.textContent !== '') {
+              if (colValues[colCell.textContent]) {
+                  colValues[colCell.textContent].push(colCell);
+              } else {
+                  colValues[colCell.textContent] = [colCell];
+              }
+          }
+      }
+
+      for (const value in rowValues) {
+          if (rowValues[value].length > 1) {
+              rowValues[value].forEach(cell => cell.classList.add('error'));
+          }
+      }
+
+      for (const value in colValues) {
+          if (colValues[value].length > 1) {
+              colValues[value].forEach(cell => cell.classList.add('error'));
+          }
+      }
+  }
+
+  for (let blockRow = 0; blockRow < 3; blockRow++) {
+      for (let blockCol = 0; blockCol < 3; blockCol++) {
+          const blockValues = {};
+
+          for (let row = blockRow * 3; row < blockRow * 3 + 3; row++) {
+              for (let col = blockCol * 3; col < blockCol * 3 + 3; col++) {
+                  const cell = document.querySelector(`.cell[data-row="${row}"][data-col="${col}"]`);
+
+                  if (cell.textContent !== '') {
+                      if (blockValues[cell.textContent]) {
+                          blockValues[cell.textContent].push(cell);
+                      } else {
+                          blockValues[cell.textContent] = [cell];
+                      }
+                  }
+              }
+          }
+
+          for (const value in blockValues) {
+              if (blockValues[value].length > 1) {
+                  blockValues[value].forEach(cell => cell.classList.add('error'));
+              }
+          }
+      }
+  }
 }
