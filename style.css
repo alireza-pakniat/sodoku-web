@@ -80,3 +80,8 @@ body {
 .cell.error {
   background-color: #ffcccc;
 }
+
+.cell.user-input {
+  color: #3399ff; /* آبی روشن‌تر و ملایم */
+}
+

@@ -40,51 +40,75 @@ for (let row = 0; row < 9; row++) {
 }
 
 // باز کردن منوی انتخاب عدد
+/* ... بالای فایل همه‌چیز مثل قبل بماند … */
+
+/* ---------- جایگزینِ تابع openNumberPicker ---------- */
 function openNumberPicker(event, cell) {
-    event.stopPropagation();
+  event.stopPropagation();             // اجازه نده کلیک به سند برسد
+  if (selectedCell) selectedCell.classList.remove('selected');
 
-    if (selectedCell) {
-        selectedCell.classList.remove('selected');
-    }
+  selectedCell = cell;
+  selectedCell.classList.add('selected');
 
-    selectedCell = cell;
-    selectedCell.classList.add('selected');
+  /* 1. منو را صفر تا صدِ تازه می‌سازیم */
+  numberPicker.innerHTML = '';
 
-    numberPicker.innerHTML = '';
+  for (let i = 1; i <= 9; i++) {
+    const btn = document.createElement('button');
+    btn.textContent = i;
+    btn.addEventListener('click', () => {        // فقط همین دکمه
+      pickNumber(i);
+      closeNumberPicker();                       // ← بستنِ قطعی
+    });
+    numberPicker.appendChild(btn);
+  }
 
-    for (let i = 1; i <= 9; i++) {
-        const btn = document.createElement('button');
-        btn.textContent = i;
-        btn.onclick = (e) => {
-            e.stopPropagation();
-            pickNumber(i);
-            closeNumberPicker();
-        };
-        numberPicker.appendChild(btn);
-    }
+  const clearBtn = document.createElement('button');
+  clearBtn.textContent = 'X';
+  clearBtn.classList.add('delete-btn');
+  clearBtn.addEventListener('click', () => {
+    pickNumber('');
+    closeNumberPicker();
+  });
+  numberPicker.appendChild(clearBtn);
 
-    const clearBtn = document.createElement('button');
-    clearBtn.textContent = 'X';
-    clearBtn.classList.add('delete-btn');
-    clearBtn.onclick = (e) => {
-        e.stopPropagation();
-        pickNumber('');
-        closeNumberPicker();
-    };
-    numberPicker.appendChild(clearBtn);
-
-    const rect = cell.getBoundingClientRect();
-    numberPicker.style.left = (rect.right + window.scrollX + 5) + 'px';
-    numberPicker.style.top = (rect.bottom + window.scrollY + 5) + 'px';
-
-    numberPicker.classList.remove('hidden');
+  const r = cell.getBoundingClientRect();
+  numberPicker.style.left = `${r.right + window.scrollX + 5}px`;
+  numberPicker.style.top  = `${r.bottom + window.scrollY + 5}px`;
+  numberPicker.classList.remove('hidden');
 }
+
+/* ---------- تابع بسته‌سازیِ یگانه ---------- */
+function closeNumberPicker() {
+  numberPicker.classList.add('hidden');   // مخفی
+  numberPicker.innerHTML = '';            // محتوا صفر شود
+  if (selectedCell) {
+    selectedCell.classList.remove('selected');
+    selectedCell = null;
+  }
+}
+
+/* ---------- شنوندهٔ کلی: هر کلیک خارج از منو ⇒ بستن ---------- */
+document.addEventListener('click', (e) => {
+  if (!numberPicker.contains(e.target)) {   // بیرون از منو بود؟
+    closeNumberPicker();
+  }
+});
 
 // انتخاب عدد یا حذف
 function pickNumber(number) {
   if (selectedCell) {
       selectedCell.textContent = number;
       selectedCell.classList.remove('selected');
+
+      if (number !== '') {
+          if (!selectedCell.classList.contains('fixed')) {
+              selectedCell.classList.add('user-input');
+          }
+      } else {
+          selectedCell.classList.remove('user-input');
+      }
+
       selectedCell = null;
   }
   checkConflicts();
@@ -190,19 +214,22 @@ function checkWin() {
   const board = document.getElementById('sudoku-board');
 
   if (allFilled && !anyError) {
-      board.style.backgroundColor = '#ccffcc'; // پس زمینه کل جدول سبز
-      // همه سلول‌ها هم پس‌زمینه‌شون سبز بشه
+      board.style.backgroundColor = '#ccffcc';
       cells.forEach(cell => {
           cell.style.backgroundColor = '#ccffcc';
       });
+
+      setTimeout(() => {
+          alert("🎉 Congratulations! Puzzle Solved! 🎉");
+      }, 100); // کمی تاخیر برای اینکه سبز شدن رو ببینی بعد پیغام بیاد
+
   } else {
-      board.style.backgroundColor = ''; // برگرداندن حالت عادی
-      // فقط سلول‌های غیرثابت پس زمینه‌شون عادی بشه
+      board.style.backgroundColor = '';
       cells.forEach(cell => {
           if (!cell.classList.contains('fixed')) {
               cell.style.backgroundColor = '';
           } else {
-              cell.style.backgroundColor = '#eee'; // خونه ثابت‌ها برگرده به خاکستری
+              cell.style.backgroundColor = '#eee';
           }
       });
   }
