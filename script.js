@@ -82,15 +82,15 @@ function openNumberPicker(event, cell) {
 
 // انتخاب عدد یا حذف
 function pickNumber(number) {
-    if (selectedCell) {
-        selectedCell.textContent = number;
-        selectedCell.classList.remove('selected');
-        selectedCell = null;
-    }
-
-    checkConflicts();
-
+  if (selectedCell) {
+      selectedCell.textContent = number;
+      selectedCell.classList.remove('selected');
+      selectedCell = null;
+  }
+  checkConflicts();
+  checkWin();
 }
+
 
 // بستن number-picker
 function closeNumberPicker() {
@@ -170,5 +170,40 @@ function checkConflicts() {
               }
           }
       }
+  }
+}
+
+function checkWin() {
+  const cells = document.querySelectorAll('.cell');
+  let allFilled = true;
+  let anyError = false;
+
+  cells.forEach(cell => {
+      if (cell.textContent === '') {
+          allFilled = false;
+      }
+      if (cell.classList.contains('error')) {
+          anyError = true;
+      }
+  });
+
+  const board = document.getElementById('sudoku-board');
+
+  if (allFilled && !anyError) {
+      board.style.backgroundColor = '#ccffcc'; // پس زمینه کل جدول سبز
+      // همه سلول‌ها هم پس‌زمینه‌شون سبز بشه
+      cells.forEach(cell => {
+          cell.style.backgroundColor = '#ccffcc';
+      });
+  } else {
+      board.style.backgroundColor = ''; // برگرداندن حالت عادی
+      // فقط سلول‌های غیرثابت پس زمینه‌شون عادی بشه
+      cells.forEach(cell => {
+          if (!cell.classList.contains('fixed')) {
+              cell.style.backgroundColor = '';
+          } else {
+              cell.style.backgroundColor = '#eee'; // خونه ثابت‌ها برگرده به خاکستری
+          }
+      });
   }
 }
