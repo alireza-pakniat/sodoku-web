@@ -7,6 +7,20 @@ This is a simple web-based Sudoku game built with **HTML**, **CSS**, and **JavaS
 🏆 When the puzzle is correctly completed, a congratulatory message is displayed.
 
 ---
+# Sudoku Web Game 🎯
+
+This is a simple web-based Sudoku game built with **HTML**, **CSS**, and **JavaScript**.
+
+You can click on the empty cells, pick numbers from the popup menu, and complete the Sudoku board.  
+The game checks for mistakes in **rows**, **columns**, and **3x3 blocks** automatically!
+
+---
+
+## 🚀 How to Run
+
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/alireza-pakniat/sodoku-web.git
 
 ## 📂 Project Structure
 sudoku-web
@@ -23,7 +37,7 @@ sudoku-web
     git clone https://github.com/alireza-pakniat/sodoku-web.git
     Open index.html directly in your browser.
 
-Features
+## Features
 Fully responsive 9x9 Sudoku board.
 
 Click on empty cells to open a number picker popup.
