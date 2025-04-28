@@ -1,12 +1,11 @@
-/* عناصر اصلی */
+const msg = document.getElementById('msg');
 const board        = document.getElementById('sudoku-board');
 const numberPicker = document.getElementById('number-picker');
 let   selectedCell = null;
 
-/* ماتریس عددهای اولیه (۰ یعنی خانه خالی) */
 const initialBoard = [
- [5,0,0,3,0,0,0,0,0],
- [0,0,0,0,7,0,0,0,0],
+ [5,3,0,0,7,0,0,0,0],
+ [6,0,0,1,9,5,0,0,0],
  [0,9,8,0,0,0,0,6,0],
  [8,0,0,0,6,0,0,0,3],
  [4,0,0,8,0,3,0,0,1],
@@ -16,7 +15,6 @@ const initialBoard = [
  [0,0,0,0,8,0,0,7,9]
 ];
 
-/* ====== ساخت جدول ====== */
 for(let r=0;r<9;r++){
   const rowDiv=document.createElement('div');
   rowDiv.classList.add('row');
@@ -37,14 +35,12 @@ for(let r=0;r<9;r++){
   board.appendChild(rowDiv);
 }
 
-/* ====== نمایش منو ====== */
 function openNumberPicker(e,cell){
   e.stopPropagation();
 
   if(selectedCell) selectedCell.classList.remove('selected');
   selectedCell=cell; selectedCell.classList.add('selected');
 
-  /* ساخت دکمه‌ها از نو */
   numberPicker.innerHTML='';
   for(let i=1;i<=9;i++){
     const btn=document.createElement('button');
@@ -57,29 +53,26 @@ function openNumberPicker(e,cell){
   clr.onclick=()=>{ pickNumber(''); closeNumberPicker(); };
   numberPicker.appendChild(clr);
 
-  /* موقعیت کنار سلول */
+
   const r=cell.getBoundingClientRect();
   numberPicker.style.left=`${r.right + window.scrollX + 5}px`;
   numberPicker.style.top =`${r.bottom+ window.scrollY + 5}px`;
-  numberPicker.style.display='grid';      /* ⬅️ منو دیده شود */
+  numberPicker.style.display='grid';     
 }
 
-/* ====== بستن منو (قطعی) ====== */
 function closeNumberPicker(){
-  numberPicker.style.display='none';      /* ⬅️ منو ناپدید شود */
-  numberPicker.innerHTML='';              /* دکمه‌ها پاک شوند */
+  numberPicker.style.display='none';      
+  numberPicker.innerHTML='';              
   if(selectedCell){
     selectedCell.classList.remove('selected');
     selectedCell=null;
   }
 }
 
-/* کلیک بیرونِ منو → بستن */
 document.addEventListener('click',e=>{
   if(!numberPicker.contains(e.target)) closeNumberPicker();
 });
 
-/* ====== نوشتن عدد در سلول ====== */
 function pickNumber(num){
   if(!selectedCell) return;
 
@@ -96,60 +89,70 @@ function pickNumber(num){
   checkWin();
 }
 
-/* ====== خطاهای ردیف/ستون/بلاک ====== */
-function checkConflicts(){
-  document.querySelectorAll('.cell').forEach(c=>c.classList.remove('error'));
+function checkConflicts() {
+  document.querySelectorAll('.cell').forEach(c => {
+    c.classList.remove('error');
+    c.style.background = c.classList.contains('fixed') ? '#eee' : '';
+  });
 
-  /* ردیف و ستون */
-  for(let i=0;i<9;i++){
-    const rowCount={}, colCount={};
-    for(let j=0;j<9;j++){
-      const rCell=document.querySelector(`.cell[data-row="${i}"][data-col="${j}"]`);
-      const cCell=document.querySelector(`.cell[data-row="${j}"][data-col="${i}"]`);
+  for (let i = 0; i < 9; i++) {
+    const rowMap = {}, colMap = {};
 
-      if(rCell.textContent){
-        rowCount[rCell.textContent]=(rowCount[rCell.textContent]||[]).concat(rCell);
-      }
-      if(cCell.textContent){
-        colCount[cCell.textContent]=(colCount[cCell.textContent]||[]).concat(cCell);
-      }
+    for (let j = 0; j < 9; j++) {
+      const rCell = document.querySelector(`.cell[data-row="${i}"][data-col="${j}"]`);
+      const cCell = document.querySelector(`.cell[data-row="${j}"][data-col="${i}"]`);
+
+      if (rCell.textContent)
+        (rowMap[rCell.textContent] = rowMap[rCell.textContent] || []).push(rCell);
+
+      if (cCell.textContent)
+        (colMap[cCell.textContent] = colMap[cCell.textContent] || []).push(cCell);
     }
-    Object.values(rowCount).forEach(arr=>{ if(arr.length>1) arr.forEach(c=>c.classList.add('error')); });
-    Object.values(colCount).forEach(arr=>{ if(arr.length>1) arr.forEach(c=>c.classList.add('error')); });
+
+    Object.values(rowMap).forEach(arr => markIfDuplicate(arr));
+    Object.values(colMap).forEach(arr => markIfDuplicate(arr));
   }
 
-  /* بلاک ۳×۳ */
-  for(let br=0;br<3;br++){
-    for(let bc=0;bc<3;bc++){
-      const valMap={};
-      for(let r=br*3;r<br*3+3;r++){
-        for(let c=bc*3;c<bc*3+3;c++){
-          const cell=document.querySelector(`.cell[data-row="${r}"][data-col="${c}"]`);
-          if(cell.textContent){
-            valMap[cell.textContent]=(valMap[cell.textContent]||[]).concat(cell);
-          }
+  for (let br = 0; br < 3; br++) {
+    for (let bc = 0; bc < 3; bc++) {
+      const map = {};
+      for (let r = br * 3; r < br * 3 + 3; r++) {
+        for (let c = bc * 3; c < bc * 3 + 3; c++) {
+          const cell = document.querySelector(`.cell[data-row="${r}"][data-col="${c}"]`);
+          if (cell.textContent)
+            (map[cell.textContent] = map[cell.textContent] || []).push(cell);
         }
       }
-      Object.values(valMap).forEach(arr=>{ if(arr.length>1) arr.forEach(c=>c.classList.add('error')); });
+      Object.values(map).forEach(arr => markIfDuplicate(arr));
     }
   }
 }
 
-/* ====== بررسی برد ====== */
+function markIfDuplicate(arr) {
+  if (arr.length > 1) {
+    arr.forEach(cell => {
+      cell.classList.add('error');        
+      cell.style.background = '#ffcccc';  
+    });
+  }
+}
+
 function checkWin(){
   const cells=[...document.querySelectorAll('.cell')];
   const allFilled=cells.every(c=>c.textContent!=='');
   const noError =cells.every(c=>!c.classList.contains('error'));
 
-  if(allFilled && noError){
-    board.style.background='#ccffcc';
-    cells.forEach(c=>c.style.background='#ccffcc');
-    setTimeout(()=>alert('🎉 Congratulations! Puzzle solved!'),150);
-  }else{
-    board.style.background='';
-    cells.forEach(c=>{
-      if(c.classList.contains('fixed')) c.style.background='#eee';
-      else if(!c.classList.contains('error')) c.style.background='';
+  if (allFilled && noError) {
+    board.style.background = '#ccffcc';
+    cells.forEach(c => c.style.background = '#ccffcc');
+    msg.textContent = '🎉 Congratulations! Puzzle solved!';
+    msg.classList.remove('hidden');
+} else {
+    board.style.background = '';
+    msg.classList.add('hidden');
+    cells.forEach(c => {
+        if (c.classList.contains('error')) return;
+        c.style.background = c.classList.contains('fixed') ? '#eee' : '';
     });
-  }
+}
 }
